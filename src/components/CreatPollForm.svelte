@@ -1,4 +1,6 @@
 <script>
+    //----------May need to add .js------------
+    import PollStore from '../stores/PollStore';
     //dispatch passes data to parent
     import {createEventDispatcher} from 'svelte';
     let dispatch = createEventDispatcher();
@@ -35,8 +37,13 @@
             console.log("valid", fields)
             //...fields gives all properties of fields
             let poll = {...fields, votesA: 0, votesB: 0, id:Math.random()}
+            //save poll to store
+            PollStore.update(currentPolls => {
+                return [poll, ...currentPolls];
+            })
+
             //dispatch event to app.svelte
-            dispatch('add', poll)
+            dispatch('add')
             
         }
 

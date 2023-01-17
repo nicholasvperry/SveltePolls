@@ -4,6 +4,7 @@
 	import Tabs from "./shared/Tabs.svelte";
 	import CreatPollForm from "./components/CreatPollForm.svelte";
     import PollList from "./components/PollList.svelte";
+	import {tweened} from 'svelte/motion'
 
 	//tabs
 	let items = ['Current Polls', 'Add New Poll'];
@@ -13,42 +14,12 @@
 		activeItem = e.detail;
 	}
 
-	//dummpy polls information...temporary state
-	let polls = [
-		{
-			id: 1,
-			question: 'Python or JavaScript?',
-			answerA: 'Python',
-			answerB: 'JavaScript',
-			votesA: 9,
-			votesB: 15,
-		}
-	];
+	
 
 	const handleAdd = (e) => {
-		const poll = e.detail;
-		//make new array polls, add new poll, then add all data from polls array
-		polls = [poll, ...polls]
-		console.log(polls)
 		activeItem = 'Current Polls'
 	}
 
-	const handleVote = (e) => {
-		//e.detail is where you get the data sent
-		console.log('you clicked me')
-		const {id, option} = e.detail;
-		let copiedPolls = [...polls];
-		let upvotedPoll = copiedPolls.find((poll) => poll.id == id);
-		console.log(option)
-		if (option === 'a') {
-			upvotedPoll.votesA++;
-		}
-		if (option === 'b') {
-			upvotedPoll.votesB++;
-		}
-
-		polls = copiedPolls;
-	}
 </script>
 <Header/>
 <main>
@@ -56,7 +27,7 @@
 	{#if activeItem === 'Current Polls'}
 	<!-- send polls to PollList as props-->
 	<!-- listen -->
-	<PollList {polls} on:vote={handleVote}/>
+	<PollList />
 	{:else if activeItem === 'Add New Poll'}
 	<!-- listen for event from poll -->
 	 <CreatPollForm on:add={handleAdd}/>

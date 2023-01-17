@@ -1,21 +1,54 @@
 <script>
-    import { createEventDispatcher } from "svelte";
+    //---------May need to add .js
+    import PollStore from "../stores/PollStore";
     import Card from "../shared/Card.svelte";
+    import Button from "../shared/Button.svelte";
+    import {tweened} from 'svelte/motion'
     //import poll from pollList
     export let poll;
     
-    const dispatch = createEventDispatcher();
 
     //reactive values
     $: totalVotes = poll.votesA + poll.votesB;
     //sets width of vote bar. It is set as a style in the div
-    $: percentA = Math.floor(100 / totalVotes * poll.votesA)
-    $: percentB = Math.floor(100 / totalVotes * poll.votesB)
+    // double pipe makes default value 0 instead of nan
+    //value would be nan because 100/0 is nan
+    $: percentA = Math.floor(100 / totalVotes * poll.votesA) || 0;
+    $: percentB = Math.floor(100 / totalVotes * poll.votesB) || 0;
+
+    //tweened percentages
+    const tweenedA = tweened(0);
+    const tweenedB = tweened(0);
+    $: tweenedA.set(percentA);
+    $: tweenedB.set(percentB);
+    //$: console.log($tweenedA, $tweenedB);
 
     //handle votes passes to pollList then to App
     const handleVote = (option, id) => {
-        console.log('yes')
-        dispatch('vote', {option, id})
+        //e.detail is where you get the data sent
+		console.log('you clicked me')
+		
+        PollStore.update(currentPolls => {
+            let copiedPolls = [...currentPolls];
+		let upvotedPoll = copiedPolls.find((poll) => poll.id == id);
+		console.log(option)
+		if (option === 'a') {
+			upvotedPoll.votesA++;
+		}
+		if (option === 'b') {
+			upvotedPoll.votesB++;
+		}
+
+		return copiedPolls;
+        
+        })
+    }
+
+    //deleting a poll
+    const handleDelete = (id) => {
+        PollStore.update(currentPolls => {
+            return currentPolls.filter(poll => poll.id != id)
+        })
     }
 </script>
 
@@ -25,13 +58,16 @@
         <p>Total votes: {totalVotes}</p>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="answer" on:click={() => handleVote('a', poll.id)}>
-            <div class="percent percent-a" style="width: {percentA}%"/>
+            <div class="percent percent-a" style="width: {$tweenedA}%"/>
             <span>{poll.answerA} ({poll.votesA})</span>
         </div>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div class="answer" on:click={() => handleVote('b', poll.id)}>
-            <div class="percent percent-b" style="width: {percentB}%"/>
+            <div class="percent percent-b" style="width: {$tweenedB}%"/>
             <span>{poll.answerB} ({poll.votesB})</span>
+        </div>
+        <div class="delete">
+            <Button flat={true} on:click={() => handleDelete(poll.id)}>Delete</Button>
         </div>
     </div>
 </Card>
@@ -73,6 +109,10 @@
         background: rgba(69,196,150,0.2);
         border-left: 4px solid #45c496;
 
+    }
+    .delete{
+        margin-top: 30px;
+        text-align: center;
     }
 
 </style>
